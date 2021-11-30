@@ -6,7 +6,7 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class RootHandler implements HttpHandler {
+public class RootHandler extends Thread implements HttpHandler {
 
     @Override
     public void handle(HttpExchange he) throws IOException {
@@ -14,6 +14,7 @@ public class RootHandler implements HttpHandler {
         he.sendResponseHeaders(200, response.length());
         OutputStream os = he.getResponseBody();
         os.write(response.getBytes());
+        System.out.println(currentThread().getId());
         os.close();
     }
 }

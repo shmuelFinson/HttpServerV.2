@@ -1,4 +1,4 @@
-package http;
+package temp;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -12,7 +12,7 @@ import java.util.Map;
 
 import static http.ParseQuery.parseQuery;
 
-public class EchoPostHandler implements HttpHandler {
+public class EchoPostHandler extends Thread implements HttpHandler {
 
     @Override
     public void handle(HttpExchange he) throws IOException {
@@ -30,6 +30,7 @@ public class EchoPostHandler implements HttpHandler {
         he.sendResponseHeaders(200, response.length());
         OutputStream os = he.getResponseBody();
         os.write(response.toString().getBytes());
+        System.out.println(currentThread().getId());
         os.close();
     }
 

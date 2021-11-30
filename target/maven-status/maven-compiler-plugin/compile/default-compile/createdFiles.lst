@@ -1,0 +1,5 @@
+temp\EchoGetHandler.class
+temp\EchoPostHandler.class
+http\ReadKVPairHandler.class
+db\DynamoDBCRUD.class
+temp\EchoHeaderHandler.class

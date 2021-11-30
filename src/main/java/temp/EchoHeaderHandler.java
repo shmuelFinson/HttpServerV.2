@@ -1,4 +1,4 @@
-package http;
+package temp;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class EchoHeaderHandler implements HttpHandler {
+public class EchoHeaderHandler extends Thread implements HttpHandler {
     @Override
     public void handle(HttpExchange he) throws IOException {
         Headers headers = he.getRequestHeaders();
@@ -21,6 +21,7 @@ public class EchoHeaderHandler implements HttpHandler {
         he.sendResponseHeaders(200, response.length());
         OutputStream os = he.getResponseBody();
         os.write(response.toString().getBytes());
+        System.out.println(currentThread().getId());
         os.close();
     }
 }
