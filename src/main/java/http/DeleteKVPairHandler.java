@@ -8,7 +8,7 @@ import java.io.IOException;
 /**
  * Handler class which will respond to a DELETE HTTP request to delete a KV pair from the DB
  * */
-public class DeleteKVPair extends Thread implements HttpHandler {
+public class DeleteKVPairHandler extends Thread implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
