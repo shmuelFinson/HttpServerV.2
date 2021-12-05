@@ -1,12 +1,10 @@
 import com.sun.net.httpserver.HttpServer;
+import http.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import config.Configuration;
 import config.ConfigurationManager;
-import temp.EchoGetHandler;
-import temp.EchoHeaderHandler;
-import temp.EchoPostHandler;
-import http.RootHandler;
+
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -25,20 +23,25 @@ public class Server {
 
         HttpServer server = HttpServer.create(new InetSocketAddress(conf.getPort()), 0);
 
+        //Load configuration from file:
         LOGGER.info("Server started at port: " + conf.getPort());
         LOGGER.info("Webroot: " + conf.getWebroot());
+        LOGGER.info("create record: " + conf.getCreate_record());
+        LOGGER.info("read record: " + conf.getRead_record());
+        LOGGER.info("update record: " + conf.getUpdate_record());
+        LOGGER.info("delete record: " + conf.getDelete_record());
 
         server.createContext(conf.getWebroot(), new RootHandler());
-        server.createContext("/echoHeader", new EchoHeaderHandler());
-        server.createContext("/echoGet", new EchoGetHandler());
-        server.createContext("/echoPost", new EchoPostHandler());
+        //CRUD Handlers:
+        server.createContext(conf.getCreate_record(), new CreateKVPairHandler());
+        server.createContext(conf.getRead_record(), new ReadKVPairHandler());
+        server.createContext(conf.getUpdate_record(), new UpdateKVPairHandler());
+        server.createContext(conf.getDelete_record(), new DeleteKVPairHandler());
 
-        //TODO See if this really is multithreaded - could be useful
         server.setExecutor(Executors.newCachedThreadPool());
 
         server.start();
 
-        //TODO See how to deal with bad requests - how to handle wrong version number etc..
 
 
     }

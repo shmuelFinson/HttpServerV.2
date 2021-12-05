@@ -8,17 +8,17 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 public class KVPair {
 
 
-    private String ID;
+    private String _Key;
 
     private String Value;
 
-    @DynamoDBHashKey(attributeName="ID")
-    public String getID() {
-        return ID;
+    @DynamoDBHashKey(attributeName="_Key")
+    public String get_Key() {
+        return _Key;
     }
 
-    public void setID(String ID) {
-        this.ID = ID;
+    public void set_Key(String _Key) {
+        this._Key = _Key;
     }
 
     @DynamoDBAttribute(attributeName="Value")
@@ -31,7 +31,11 @@ public class KVPair {
     }
 
 
-
-
-
+    @Override
+    public String toString() {
+        return "{" +
+                "Key='" + _Key + '\'' +
+                ", Value='" + Value + '\'' +
+                '}';
+    }
 }

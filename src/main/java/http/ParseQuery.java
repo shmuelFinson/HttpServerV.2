@@ -44,4 +44,17 @@ public class ParseQuery {
             }
         }
     }
+
+
+    public static boolean properFormatForKV(Map<String, Object> parameters){
+        if((parameters.containsKey("Key") || parameters.containsKey("key") )&& (parameters.containsKey("Value") || parameters.containsKey("value")))
+            return true;
+        else
+            return false;
+    }
+    public static boolean properFormatForK(Map<String, Object> parameters){
+        if(parameters.containsKey("Key") || parameters.containsKey("key"))
+            return true;
+        else return false;
+    }
 }

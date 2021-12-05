@@ -1,25 +1,26 @@
 package db;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DynamoDBCRUD {
 
+    //region Members
     private final String TABLE_NAME = "KVPairs";
     AWSCredentialsProvider creds;
     final AmazonDynamoDB ddb;
+    DynamoDBMapper mapper;
+    private final static Logger LOGGER = LoggerFactory.getLogger(DynamoDBCRUD.class);
+    //endregion
 
+    //region C-tor
     public DynamoDBCRUD() {
-        this.creds  = new AWSStaticCredentialsProvider(
+        this.creds = new AWSStaticCredentialsProvider(
                 new BasicAWSCredentials(
                         SecurityCreds.ACCESS_KEY,
                         SecurityCreds.SECRET_KEY
@@ -29,79 +30,134 @@ public class DynamoDBCRUD {
                 .withCredentials(creds)
                 .withRegion("eu-west-1")
                 .build();
-    }
-
-
-    public void readKVPair(String name) {
-            HashMap<String, AttributeValue> key_to_get =
-                    new HashMap<String, AttributeValue>();
-
-            key_to_get.put("ID", new AttributeValue(String.valueOf(1)));
-            //key_to_get.put("ID",new AttributeValue(String.valueOf(1)));
-
-            GetItemRequest request = null;
-
-        request = new GetItemRequest()
-                .withKey(key_to_get)
-                .withTableName(TABLE_NAME);
-
-
-        AWSCredentialsProvider creds = new AWSStaticCredentialsProvider(
-                new BasicAWSCredentials(
-                        "AKIAVGLMMMVG42VFT5RE",
-                        "wH6AxAAJCnYy/WXKeJiHWFFUf+XlP5TorkJGIj8+"
-                )
-        );
-        final AmazonDynamoDB ddb = AmazonDynamoDBClientBuilder.standard()
-                .withCredentials(creds)
-                .withRegion("eu-west-1")
-                .build();
+        LOGGER.info("Connected to DB...");
 
         try {
-            Map<String, AttributeValue> returned_item =
-                    ddb.getItem(request).getItem();
-            if (returned_item != null) {
-                Set<String> keys = returned_item.keySet();
-                for (String key : keys) {
-                    System.out.format("%s: %s\n",
-                            key, returned_item.get(key).toString());
-                }
-            } else {
-                System.out.format("No item found with the key %s!\n", name);
-            }
-        } catch (AmazonServiceException e) {
-            System.err.println(e.getErrorMessage());
+            this.mapper = new DynamoDBMapper(ddb);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
         }
     }
+    //endregion
 
-    public void updateKVPair(){
+    //region CRUD functions
+    public String readKVPair(String key) {
+        String res = null;
+        try {
+            try{
+                KVPair kvPair = mapper.load(KVPair.class, key);
+                LOGGER.info("Record found: " + kvPair.toString());
+                res = "<h1>Record Found: </h1>" + "<h1>" + kvPair.toString() + "</h1>";
+
+                //TODO Send to user html
+            }
+            catch (Exception e){
+                //TODO Tell client that record does not exist
+                LOGGER.info("Invalid key - No Such Record exists for key: " + key);
+                res = "<h1>Invalid key - No Such Record exists for key: </h1>" + "<h1>" + key + "</h1>";
+            }
+
+
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            res = "<p>" + e.getMessage() + "</p>";
+        }
+
+        return res;
+    }
+
+
+    //both cases work
+    public String updateKVPair(String key, String value) {
+
+        String res = null;
+        try {
+            try{
+                KVPair kvPair = mapper.load(KVPair.class, key);
+                kvPair.setValue(value);
+                mapper.save(kvPair);
+                //TODO Tell user that value has been updated
+                LOGGER.info("Record updated to: " + kvPair.toString());
+                res = "<h1>Record updated to: </h1>" + "<h1>" + kvPair.toString() + "</h1>";
+            }
+            catch (Exception e){
+                KVPair newPair = new KVPair();
+                newPair.set_Key(key);
+                newPair.setValue(value);
+                mapper.save(newPair);
+                //TODO Tell client that record does not exist
+                LOGGER.info("No Such record, creating new Record: " + newPair.toString());
+                res = "<h1>No Such record, creating new Record: </h1>" + "<h1>" + newPair.toString() + "</h1>";
+            }
+
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            res = "<p>" + e.getMessage() + "</p>";
+        }
+        return res;
 
     }
 
-    public void deleteKVPair(){}
+    //works for both cases
+    public String deleteKVPair(String key) {
+        String res = null;
+        try {
 
-    public void createKVPair(String key, String Value){
+            try{
+                KVPair kvPair = mapper.load(KVPair.class, key);
+                mapper.delete(kvPair);
+                LOGGER.info("Record Deleted: " + kvPair.toString());
+                res = "<h1>Record Deleted: </h1>" + "<h1>" + kvPair.toString() + "</h1>";
+            }
+            catch (Exception e){
+                //TODO Tell client that record does not exist
+                LOGGER.info("Record Does not exist with key: " + key);
+                res = "<h1>Record Does not exist with key: </h1>" + "<h1>" + key + "</h1>";
+            }
 
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            res = "<p>" + e.getMessage() + "</p>";
+
+        }
+        return res;
+
+    }
+
+    //works for both cases
+    public String createKVPair(String key, String value) {
 
         KVPair kvPair = new KVPair();
+        String res = null;
 
-        try{
-            kvPair.setID(key);
-            kvPair.setValue(Value);
-            DynamoDBMapper mapper = new DynamoDBMapper(ddb);
-            try{
-                KVPair load = mapper.load(KVPair.class,key);
-                if(load != null){
-                    System.out.println(load.getValue());
-                }
+        try {
+
+            KVPair search = mapper.load(KVPair.class, key);
+            if (search != null) {
+                kvPair.set_Key(key);
+                kvPair.setValue(value);
+                mapper.save(kvPair);
+                //TODO Tell Client that record existed and was overwritten
+                LOGGER.info("Record already exists, was overwritten to: " + kvPair.toString());
+                res = "<h1>Record already exists, was overwritten to: </h1>" + "<h1>" + kvPair.toString() + "</h1>";
+
+            } else {
+
+                kvPair.set_Key(key);
+                kvPair.setValue(value);
+                mapper.save(kvPair);
+
+                //TODO tell client record created
+                LOGGER.info("New Record created: " + kvPair.toString());
+                res = "<h1>New Record created: </h1>" + "<h1>" + kvPair.toString() + "</h1>";
+
             }
-            catch (Exception e){}
-
-           // mapper.save(kvPair);
         }
-        catch (Exception e){
-
+         catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            res = "<p>" + e.getMessage() + "</p>";
         }
+        return res;
     }
 
 }

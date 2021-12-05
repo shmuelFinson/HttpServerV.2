@@ -1,4 +1,8 @@
 {
   "port": 8080,
-  "webroot": "/"
+  "webroot": "/",
+  "create_record": "/create",
+  "read_record": "/read",
+  "update_record": "/update",
+  "delete_record": "/delete"
 }
