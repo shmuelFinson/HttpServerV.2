@@ -44,18 +44,19 @@ public class DynamoDBCRUD {
     public String readKVPair(String key) {
         String res = null;
         try {
-            try{
-                KVPair kvPair = mapper.load(KVPair.class, key);
-                LOGGER.info("Record found: " + kvPair.toString());
-                res = "<h1>Record Found: </h1>" + "<h1>" + kvPair.toString() + "</h1>";
 
-                //TODO Send to user html
-            }
-            catch (Exception e){
-                //TODO Tell client that record does not exist
-                LOGGER.info("Invalid key - No Such Record exists for key: " + key);
-                res = "<h1>Invalid key - No Such Record exists for key: </h1>" + "<h1>" + key + "</h1>";
-            }
+                KVPair kvPair = mapper.load(KVPair.class, key);
+                if(kvPair != null){
+                    LOGGER.info("Record found: " + kvPair.toString());
+                    res = "<h1>Record Found: </h1>" + "<h1>" + kvPair.toString() + "</h1>";
+                }
+
+
+                else{
+                    LOGGER.info("Invalid key - No Record exists for key: " + key);
+                    res = "<h1>Invalid key - No Record exists for key: </h1>" + "<h1>" + key + "</h1>";
+
+                }
 
 
         } catch (Exception e) {
@@ -71,24 +72,26 @@ public class DynamoDBCRUD {
     public String updateKVPair(String key, String value) {
 
         String res = null;
+        KVPair kvPair = new KVPair();
         try {
-            try{
-                KVPair kvPair = mapper.load(KVPair.class, key);
-                kvPair.setValue(value);
-                mapper.save(kvPair);
-                //TODO Tell user that value has been updated
-                LOGGER.info("Record updated to: " + kvPair.toString());
-                res = "<h1>Record updated to: </h1>" + "<h1>" + kvPair.toString() + "</h1>";
-            }
-            catch (Exception e){
-                KVPair newPair = new KVPair();
-                newPair.set_Key(key);
-                newPair.setValue(value);
-                mapper.save(newPair);
-                //TODO Tell client that record does not exist
-                LOGGER.info("No Such record, creating new Record: " + newPair.toString());
-                res = "<h1>No Such record, creating new Record: </h1>" + "<h1>" + newPair.toString() + "</h1>";
-            }
+                kvPair = mapper.load(KVPair.class, key);
+                if(kvPair != null){
+                    kvPair.setValue(value);
+                    mapper.save(kvPair);
+                    //TODO Tell user that value has been updated
+                    LOGGER.info("Record updated to: " + kvPair.toString());
+                    res = "<h1>Record updated to: </h1>" + "<h1>" + kvPair.toString() + "</h1>";
+                }
+
+           else{
+                    KVPair newPair = new KVPair();
+                    newPair.set_Key(key);
+                    newPair.setValue(value);
+                    mapper.save(newPair);
+                    //TODO Tell client that record does not exist
+                    LOGGER.info("No Such record, creating new Record: " + newPair.toString());
+                    res = "<h1>No Such record, creating new Record: </h1>" + "<h1>" + newPair.toString() + "</h1>";
+                }
 
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
@@ -101,19 +104,20 @@ public class DynamoDBCRUD {
     //works for both cases
     public String deleteKVPair(String key) {
         String res = null;
-        try {
+        KVPair kvPair = new KVPair();
 
-            try{
-                KVPair kvPair = mapper.load(KVPair.class, key);
+        try {
+                 kvPair = mapper.load(KVPair.class, key);
+            if (kvPair != null) {
                 mapper.delete(kvPair);
                 LOGGER.info("Record Deleted: " + kvPair.toString());
                 res = "<h1>Record Deleted: </h1>" + "<h1>" + kvPair.toString() + "</h1>";
             }
-            catch (Exception e){
-                //TODO Tell client that record does not exist
-                LOGGER.info("Record Does not exist with key: " + key);
-                res = "<h1>Record Does not exist with key: </h1>" + "<h1>" + key + "</h1>";
+            else{
+                LOGGER.info("Record Does not exist for key: " + key);
+                res = "<h1>Record Does not exist for key: </h1>" + "<h1>" + key + "</h1>";
             }
+
 
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
